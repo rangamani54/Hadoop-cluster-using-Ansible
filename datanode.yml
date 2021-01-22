@@ -1,0 +1,63 @@
+- hosts: [Datanode]
+  vars_prompt:
+  - name: dir
+    private: no
+    prompt: "Enter name for datanode  directory: "
+  - name: ip
+    private: no
+    prompt: "Enter IP of Namenode: " 
+  tasks:
+  - name: "Copying JDK SOftwares"
+    copy:
+      src: "/root/jdk-8u171-linux-x64.rpm"
+      dest: "/"
+
+  - name: "Installing JDK Softwares"
+    shell: "rpm -i /jdk-8u171-linux-x64.rpm"
+    ignore_errors: yes
+
+  - name: "Copying Hadoop SOftwares"
+    copy:
+      src: "/root/hadoop-1.2.1-1.x86_64.rpm"
+      dest: "/"
+
+  - name: "Installing Hadoop Softwares"
+    shell: "rpm -i /hadoop-1.2.1-1.x86_64.rpm --force"
+    ignore_errors: yes
+ 
+  - name: "Stopping Firewall"
+    shell: "systemctl stop firewalld"
+    ignore_errors: yes
+
+  - name: "Creating Directory"
+    file:
+      state: directory
+      path: /"{{dir}}"
+   
+  - name: "Configuring Hdfs-site file"
+    template:
+      src: "/ws2/dn-hdfs-site.xml"
+      dest: "/etc/hadoop/hdfs-site.xml"
+
+  - name: "Configuring Core-site file"
+    template:
+      src: "/ws2/dn-core-site.xml"
+      dest: "/etc/hadoop/core-site.xml"
+
+  - name: "Starting Datanode"
+    shell: "hadoop-daemon.sh start datanode"
+    ignore_errors: yes
+
+  - name: "showing status"
+    shell: "jps"
+    register: s
+  - name: "showing status"
+    debug: 
+      var: s.stdout
+
+  - name: "showing cluster report"
+    shell: "hadoop dfsadmin -report"
+    register: r
+  - name: "showing cluster report"
+    debug:
+      var: r.stdout

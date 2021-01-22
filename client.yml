@@ -1,0 +1,42 @@
+- hosts: [Client]
+  vars_prompt:
+  - name: ip
+    private: no
+    prompt: "Enter IP of Namenode: " 
+  tasks:
+  - name: "Copying JDK SOftwares"
+    copy:
+      src: "/root/jdk-8u171-linux-x64.rpm"
+      dest: "/"
+
+  - name: "Installing JDK Softwares"
+    shell: "rpm -i /jdk-8u171-linux-x64.rpm"
+    ignore_errors: yes
+
+  - name: "Copying Hadoop Softwares"
+    copy:
+      src: "/root/hadoop-1.2.1-1.x86_64.rpm"
+      dest: "/"
+
+  - name: "Installing Hadoop Softwares"
+    shell: "rpm -i /hadoop-1.2.1-1.x86_64.rpm --force"
+    ignore_errors: yes
+
+  - name: "Configuring Core-site file"
+    template:
+      src: "/ws2/dn-core-site.xml"
+      dest: "/etc/hadoop/core-site.xml"
+
+  - name: "showing status of files"
+    shell: "hadoop fs -ls /"
+    register: s
+  - name: "showing status"
+    debug: 
+      var: s
+
+  - name: "showing cluster report"
+    shell: "hadoop dfsadmin -report"
+    register: r
+  - name: "showing cluster report"
+    debug:
+      var: r.stdout
